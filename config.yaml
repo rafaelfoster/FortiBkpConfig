@@ -1,0 +1,17 @@
+repofolder: /var/repositories/fortibkpconfig
+
+database:
+   DBUser: fortigate_db_user
+   DBPass: V3ry_S3cUr3_P@ssw0rd
+   DBBase: db_name
+   DBHost: db_host
+
+ftp:
+   FTPUser: fortinet
+   FTPHost: ftp.example.com
+   FTPPass: V3ry_S3cUr3_P@ssw0rd
+
+log:
+   Destination: database, logfile
+   logfile:
+      logPath: "/var/log/FortiBkpConfig/log_connection.log"
