@@ -3,8 +3,9 @@
 import MySQLdb
 
 class DB(object):
-	db     = ""
-	cursor = ""
+	db        = ""
+	cursor    = ""
+	FGT_Table = "fgt_devices"
 
 	def setup(self, Config):
 		DBHost = Config["DBHost"]
@@ -24,7 +25,7 @@ class DB(object):
 			exit()
 
 	def getAll(self):
-		sql = "SELECT * FROM fgt_devices WHERE STATUS = 0"
+		sql = "SELECT * FROM {tbName} WHERE STATUS = 0".format(tbName=self.FGT_Table)
 
 		try:
 			self.cursor.execute(sql)
@@ -33,3 +34,18 @@ class DB(object):
 		except MySQLdb.Error as e:
 			print "Error: unable to fecth data: %s" % (e)
 			self.db.close()
+
+	def updateDB(self, field, value, ID ):
+		sql = "UPDATE {tbName} SET {tbField} = {tbValue} WHERE ID = {tbID}".format(
+			tbName=self.FGT_Table,
+			tbField=field,
+			tbValue=value,
+			tbID=ID
+		)
+		try:
+			self.cursor.execute(sql)
+			results = self.cursor.fetchall()
+			return results
+		except MySQLdb.Error as e:
+			print "Error: Unable to update field: %s" % (e)
+			self.db.close
