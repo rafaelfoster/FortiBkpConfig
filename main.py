@@ -98,7 +98,8 @@ if __name__ == "__main__":
     if sys.argv:
         for x in range(1,len(sys.argv)):
             if sys.argv[x] == "--configfile" or sys.argv[x] == "-c":
-                UserGroup = sys.argv[x + 1]
+                configfile = sys.argv[x + 1]
+                print "Loading file %s" % (configfile)
 
             if sys.argv[x] == "--debug":
                 Debug = True

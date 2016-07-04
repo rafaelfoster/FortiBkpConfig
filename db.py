@@ -17,9 +17,9 @@ class DB(object):
 
 		except MySQLdb.Error as e:
 			if e[0] == 2002:
-				print "Error on connecting to Mysql? \nIs MysqlServer running on target host?"
+				print "** Error on connecting to Mysql \n** Is MysqlServer running on target host?"
 			else:
-				print "Error: unable to connect to db \n\t {dberror}".format(dberror=e)
+				print "** Error: unable to connect to db \n\t {dberror}".format(dberror=e)
 			exit()
 
 	def getAll(self):
