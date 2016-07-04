@@ -11,6 +11,7 @@ class DB(object):
 		DBUser = Config["DBUser"]
 		DBPass = Config["DBPass"]
 		DBName = Config["DBBase"]
+
 		try:
 			self.db = MySQLdb.connect(DBHost,DBUser,DBPass,DBName )
 			self.cursor = self.db.cursor()
