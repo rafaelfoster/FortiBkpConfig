@@ -5,6 +5,7 @@ import re
 import git
 import sys
 import yaml
+import errno
 import socket
 import pexpect
 import datetime
@@ -18,6 +19,9 @@ def main(configFile):
 
     with open(configFile, 'r') as ymlfile:
         cfg = yaml.load(ymlfile)
+
+    with open("logmessages.yaml", 'r') as logfile:
+        LOGM = yaml.load(logfile)
 
     if len(cfg) == 0:
         print "Could not obtain configs from config file."
@@ -36,8 +40,7 @@ def main(configFile):
     fgt = FGT()
     db = DB()
     db.setup(cfg['database'])
-    os.chdir(defaultRepo)
-    repo = git.Repo( defaultRepo )
+
     for FGTDevice in db.getAll():
     	ID         = FGTDevice[0]
     	STATUS     = FGTDevice[1]
@@ -54,7 +57,11 @@ def main(configFile):
     	IPAddr = fgt.connFGT(IP, IP2, PORT)
     	print IPAddr
     	if IPAddr:
-    		outFGTInfo = fgt.runFGTCommand(USER, PASSWORD, IPAddr, PORT, "get system status")
+            outFGTInfo = fgt.runFGTCommand(USER, PASSWORD, IPAddr, PORT, "get system status")
+            if type(outFGTInfo) == int:
+                logID = "FBC04%d" % (outFGTInfo)
+                print LOGM[logID]
+                exit()
     		if "FortiOS" in outFGTInfo:
     			FGTInfo = fgt.getFGTInfo(outFGTInfo)
     			FGTName   = FGTInfo[0]
@@ -66,31 +73,37 @@ def main(configFile):
     					print "UPDATE SERIAL"
 
     			clientRepo = "%s/%s" % (defaultRepo, CLIENT)
-    			if not os.path.exists(clientRepo):
-    				os.makedirs(clientRepo)
-    				uid = pwd.getpwnam(FTPUser).pw_uid
-    				gid = grp.getgrnam(FTPUser).gr_gid
-    				os.chown(clientRepo, uid, gid)
+                if not os.path.exists(clientRepo):
+                    try:
+                        os.makedirs(clientRepo)
+                        uid = pwd.getpwnam(FTPUser).pw_uid
+                        gid = grp.getgrnam(FTPUser).gr_gid
+                        os.chown(clientRepo, uid, gid)
+                    except OSError as e:
+                        print "Error on create repo directory: %s" % (e)
+                        return 1
+                else:
+                    os.chdir(defaultRepo)
+                    repo = git.Repo( defaultRepo )
 
-    			bkpFile = "%s/bkp_fgtconfig_%s.conf" % (CLIENT, FGTSerial)
-
-    			strBkpCMD = 'exec backup full-config ftp %s %s %s %s' % (bkpFile, FTPHost, FTPUser, FTPPass)
-    			print strBkpCMD
-    			outFGTBkpInfo = fgt.runFGTCommand(USER, PASSWORD, IPAddr, PORT, strBkpCMD)
-    			print outFGTBkpInfo
-    			if "Send config file to ftp server OK" in outFGTBkpInfo:
-    				print "Backup OK"
-    				print "Starting to GIT"
-    				repo.git.add(bkpFile)
-    				CommitHash = ""
-    				fcommit = repo.git.commit( m='Fortigate Backup Config on {date}'.format(date=commit_format_date) )
-    				regexGitHash = r"(.*)\ (\w+)\]\ (.*)"
-    				if re.search(regexGitHash, fcommit):
-    					strFind = re.search(regexGitHash, fcommit)
-    					CommitHash = strFind.group(2)
-    				print "Hash: %s" % (CommitHash)
-    			elif "Return code 10" in outFGTBkpInfo:
-    				print "Error: Login Failed"
+                bkpFile = "%s/bkp_fgtconfig_%s.conf" % (CLIENT, FGTSerial)
+                strBkpCMD = 'exec backup full-config ftp %s %s %s %s' % (bkpFile, FTPHost, FTPUser, FTPPass)
+                print strBkpCMD
+                outFGTBkpInfo = fgt.runFGTCommand(USER, PASSWORD, IPAddr, PORT, strBkpCMD)
+                print outFGTBkpInfo
+                if "Send config file to ftp server OK" in outFGTBkpInfo:
+                    print "Backup OK"
+                    print "Starting to GIT"
+                    repo.git.add(bkpFile)
+                    CommitHash = ""
+                    fcommit = repo.git.commit( m='Fortigate Backup Config on {date}'.format(date=commit_format_date) )
+                    regexGitHash = r"(.*)\ (\w+)\]\ (.*)"
+                    if re.search(regexGitHash, fcommit):
+                        strFind = re.search(regexGitHash, fcommit)
+                        CommitHash = strFind.group(2)
+                        print "Hash: %s" % (CommitHash)
+                    elif "Return code 10" in outFGTBkpInfo:
+                        print "Error: Login Failed"
 
 if __name__ == "__main__":
 

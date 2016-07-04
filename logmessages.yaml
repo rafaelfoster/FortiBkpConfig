@@ -1,0 +1,8 @@
+# 1* -> Ok Messages
+# 2* -> Info Messages
+# 3* -> Warn Messages
+# 4* -> Error Messages
+
+FBC041: "Permission denied"
+FBC042: "Couldn't connect to fortigate"
+FBC043: "Some error occour on connect to Fortigate"

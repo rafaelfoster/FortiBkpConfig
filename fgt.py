@@ -10,13 +10,13 @@ class FGT():
 	def check_conn(self, IPAddr, Port):
 		s = socket.socket()
 		try:
-			s.connect((IPAddr, Port)) 
+			s.connect((IPAddr, Port))
 			return True
-		except Exception as e: 
+		except Exception as e:
 			return False
 		finally:
 			s.close()
-	
+
 	def connFGT(self,IP, IP2, PORT):
 		if not self.check_conn(IP, PORT):
 			if not self.check_conn(IP2, PORT):
@@ -26,9 +26,9 @@ class FGT():
 				IPAddr = IP2
 		else:
 			IPAddr = IP
-		
+
 		return IPAddr
-	
+
 	def getFGTInfo(self,FGTSystemstatus):
 		regexHostname = r"(Hostname:)\ (\w+)"
 		if re.search(regexHostname, FGTSystemstatus):
@@ -41,30 +41,29 @@ class FGT():
 		if re.search(regexSerial, FGTSystemstatus):
 			strFind = re.search(regexSerial, FGTSystemstatus)
 			FGTSerial = strFind.group(2)
-		else: 
+		else:
 			FGTSerial = None
-		
+
 		FGTInfo = (FGTHostname,FGTSerial)
 		return FGTInfo
 
 	def runFGTCommand(self, USER, PASSWORD, IPAddr, PORT, COMMAND):
 		try:
-			strFGTConnection = "ssh %s@%s -p %s %s" % (USER, IPAddr, PORT, COMMAND)	
+			strFGTConnection = "ssh %s@%s -p %s %s" % (USER, IPAddr, PORT, COMMAND)
 			child = pexpect.spawn(strFGTConnection, timeout=60)
 			child.expect(".*assword:")
 			child.sendline(PASSWORD)
 			i = child.expect (['Permission denied', '[#\$] '])
 			if i == 0:
-				print('Permission denied on host. Can\'t login')
 				child.kill(1)
-				return False
+				return 1
 			elif i == 1:
 				child.expect(pexpect.EOF)
 				FGTOutput = child.before
 				return FGTOutput
 		except pexpect.ExceptionPexpect, e:
 			if "timeout" in e:
-				print "ERROR: Timeout"
+				return 2
 			else:
 				print "error: %s" % (e)
-
+				return 3
