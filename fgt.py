@@ -62,7 +62,7 @@ class FGT():
 				FGTOutput = child.before
 				return FGTOutput
 		except pexpect.ExceptionPexpect, e:
-			if "timeout" in e:
+			if "Timeout" in e:
 				return 2
 			else:
 				print "error: %s" % (e)

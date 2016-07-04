@@ -15,6 +15,7 @@ from db import DB
 from fgt import FGT
 from log import LOG
 
+Debug = False
 def main(configFile):
     today = datetime.date.today()
     commit_format_date = today.strftime('%d-%m-%Y')
@@ -58,9 +59,15 @@ def main(configFile):
             print "Could not change folder user.\nThe user \'%s\' already exists?" % (cfg["ftp"]["FTPUser"])
             exit()
 
+        git.Repo.init(defaultRepo)
     else:
         os.chdir(defaultRepo)
-        repo = git.Repo( defaultRepo )
+
+    gitRepo = "%s/%s" % (defaultRepo, ".git")
+    if not os.path.exists(gitRepo):
+        git.Repo.init(defaultRepo)
+
+    repo = git.Repo( defaultRepo )
 
     for FGTDevice in db.getAll():
     	ID         = FGTDevice[0]
@@ -83,17 +90,18 @@ def main(configFile):
                 logID = "FBC04%d" % (outFGTInfo)
                 print LOGM[logID]
                 exit()
-    		if "FortiOS" in outFGTInfo:
-    			FGTInfo = fgt.getFGTInfo(outFGTInfo)
-    			FGTName   = FGTInfo[0]
-    			FGTSerial = FGTInfo[1]
+            elif "FortiOS" in outFGTInfo:
+                print "We're in!"
+                FGTInfo = fgt.getFGTInfo(outFGTInfo)
+                FGTName   = FGTInfo[0]
+                FGTSerial = FGTInfo[1]
 
-    			if FGTInfo[0] != NAME:
-    					print "UPDATE NAME"
-    			if FGTInfo[1] != SERIAL:
-    					print "UPDATE SERIAL"
+                if FGTInfo[0] != NAME:
+                    print "UPDATE NAME"
+                if FGTInfo[1] != SERIAL:
+                    print "UPDATE SERIAL"
 
-    			clientRepo = "%s/%s" % (defaultRepo, CLIENT)
+                clientRepo = "%s/%s" % (defaultRepo, CLIENT)
                 if not os.path.exists(clientRepo):
                     print "Path does not exist. Creating it...."
                     try:
@@ -105,16 +113,15 @@ def main(configFile):
                         print "Error on create repo directory: %s" % (e)
                         return 1
 
-
                 bkpFile = "%s/bkp_fgtconfig_%s.conf" % (CLIENT, FGTSerial)
                 strBkpCMD = 'exec backup full-config ftp %s %s %s %s' % (bkpFile, FTPHost, FTPUser, FTPPass)
                 print strBkpCMD
                 outFGTBkpInfo = fgt.runFGTCommand(USER, PASSWORD, IPAddr, PORT, strBkpCMD)
                 print outFGTBkpInfo
-                if "Send config file to ftp server OK" in outFGTBkpInfo:
+                if "ftp server OK" in outFGTBkpInfo:
                     print "Backup OK"
                     print "Starting to GIT"
-                    repo.git.add(bkpFile)
+                    gitAddFile = repo.git.add(bkpFile)
                     CommitHash = ""
                     fcommit = repo.git.commit( m='Fortigate Backup Config on {date}'.format(date=commit_format_date) )
                     regexGitHash = r"(.*)\ (\w+)\]\ (.*)"
@@ -126,7 +133,6 @@ def main(configFile):
                         print "Error: Login Failed"
 
 if __name__ == "__main__":
-
     configfile = "config.yaml"
     if sys.argv:
         for x in range(1,len(sys.argv)):
