@@ -118,7 +118,11 @@ def main(configFile):
                 print strBkpCMD
                 outFGTBkpInfo = fgt.runFGTCommand(USER, PASSWORD, IPAddr, PORT, strBkpCMD)
                 print outFGTBkpInfo
-                if "ftp server OK" in outFGTBkpInfo:
+                if type(outFGTInfo) == int:
+                    logID = "FBC04%d" % (outFGTInfo)
+                    print LOGM[logID]
+                    exit()
+                elif "ftp server OK" in outFGTBkpInfo:
                     print "Backup OK"
                     print "Starting to GIT"
                     gitAddFile = repo.git.add(bkpFile)
