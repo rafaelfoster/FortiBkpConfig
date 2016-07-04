@@ -3,6 +3,8 @@
 import os
 import re
 import git
+import grp
+import pwd
 import sys
 import yaml
 import errno
@@ -40,6 +42,25 @@ def main(configFile):
     fgt = FGT()
     db = DB()
     db.setup(cfg['database'])
+    if not os.path.exists(defaultRepo):
+        print "Path does not exist. Creating it...."
+        try:
+            os.makedirs(defaultRepo)
+        except OSError as e:
+            print "Error on create repo directory: %s" % (e)
+            return 1
+
+        try:
+            uid = pwd.getpwnam(cfg["ftp"]["FTPUser"]).pw_uid
+            gid = grp.getgrnam(cfg["ftp"]["FTPUser"]).gr_gid
+            os.chown(defaultRepo, uid, gid)
+        except:
+            print "Could not change folder user.\nThe user \'%s\' already exists?" % (cfg["ftp"]["FTPUser"])
+            exit()
+
+    else:
+        os.chdir(defaultRepo)
+        repo = git.Repo( defaultRepo )
 
     for FGTDevice in db.getAll():
     	ID         = FGTDevice[0]
@@ -74,6 +95,7 @@ def main(configFile):
 
     			clientRepo = "%s/%s" % (defaultRepo, CLIENT)
                 if not os.path.exists(clientRepo):
+                    print "Path does not exist. Creating it...."
                     try:
                         os.makedirs(clientRepo)
                         uid = pwd.getpwnam(FTPUser).pw_uid
@@ -82,9 +104,7 @@ def main(configFile):
                     except OSError as e:
                         print "Error on create repo directory: %s" % (e)
                         return 1
-                else:
-                    os.chdir(defaultRepo)
-                    repo = git.Repo( defaultRepo )
+
 
                 bkpFile = "%s/bkp_fgtconfig_%s.conf" % (CLIENT, FGTSerial)
                 strBkpCMD = 'exec backup full-config ftp %s %s %s %s' % (bkpFile, FTPHost, FTPUser, FTPPass)
