@@ -6,7 +6,11 @@ class DB(object):
 	db     = ""
 	cursor = ""
 
-	def __init__(self):
+	def setup(self, Config):
+		DBHost = Config["DBHost"]
+		DBUser = Config["DBUser"]
+		DBPass = Config["DBPass"]
+		DBName = Config["DBBase"]
 		try:
 			self.db = MySQLdb.connect(DBHost,DBUser,DBPass,DBName )
 			self.cursor = self.db.cursor()
@@ -19,7 +23,7 @@ class DB(object):
 		sql = "SELECT * FROM fgt_devices WHERE STATUS = 0"
 
 		try:
-			self.cursor.execute(sql)  
+			self.cursor.execute(sql)
 			results = self.cursor.fetchall()
 			return results
 		except MySQLdb.Error as e:

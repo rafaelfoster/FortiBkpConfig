@@ -7,11 +7,15 @@ import sys
 import yaml
 import socket
 import pexpect
+import datetime
 from db import DB
 from fgt import FGT
 from log import LOG
 
 def main(configFile):
+    today = datetime.date.today()
+    commit_format_date = today.strftime('%d-%m-%Y')
+
     with open(configFile, 'r') as ymlfile:
         cfg = yaml.load(ymlfile)
 
@@ -30,7 +34,8 @@ def main(configFile):
     DBBase = cfg['database']['DBBase']
 
     fgt = FGT()
-    db = DB(cfg['database'])
+    db = DB()
+    db.setup(cfg['database'])
     os.chdir(defaultRepo)
     repo = git.Repo( defaultRepo )
     for FGTDevice in db.getAll():
@@ -78,7 +83,7 @@ def main(configFile):
     				print "Starting to GIT"
     				repo.git.add(bkpFile)
     				CommitHash = ""
-    				fcommit = repo.git.commit( m='Initial commit' )
+    				fcommit = repo.git.commit( m='Fortigate Backup Config on {date}'.format(date=commit_format_date) )
     				regexGitHash = r"(.*)\ (\w+)\]\ (.*)"
     				if re.search(regexGitHash, fcommit):
     					strFind = re.search(regexGitHash, fcommit)
