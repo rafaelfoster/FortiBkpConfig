@@ -16,8 +16,11 @@ class DB(object):
 			self.cursor = self.db.cursor()
 
 		except MySQLdb.Error as e:
-			print "Error: unable to connect to db: %s" % (e)
-			self.db.close()
+			if e[0] == 2002:
+				print "Error on connecting to Mysql? \nIs MysqlServer running on target host?"
+			else:
+				print "Error: unable to connect to db \n\t {dberror}".format(dberror=e)
+			exit()
 
 	def getAll(self):
 		sql = "SELECT * FROM fgt_devices WHERE STATUS = 0"
