@@ -96,10 +96,20 @@ def main(configFile):
                 FGTName   = FGTInfo[0]
                 FGTSerial = FGTInfo[1]
 
-                if FGTInfo[0] != NAME:
-                    print "UPDATE NAME"
-                if FGTInfo[1] != SERIAL:
-                    print "UPDATE SERIAL"
+                print FGTName
+                print FGTSerial
+
+                if FGTName != NAME:
+                    if db.updateDB("NAME", FGTName, ID) == False:
+                        print "Error"
+                        exit()
+
+                if FGTSerial != SERIAL:
+                    if db.updateDB("SERIAL", FGTSerial, ID) == False:
+                        print "Error"
+                        exit()
+
+                exit()
 
                 clientRepo = "%s/%s" % (defaultRepo, CLIENT)
                 if not os.path.exists(clientRepo):

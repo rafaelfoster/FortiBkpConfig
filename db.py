@@ -36,16 +36,20 @@ class DB(object):
 			self.db.close()
 
 	def updateDB(self, field, value, ID ):
-		sql = "UPDATE {tbName} SET {tbField} = {tbValue} WHERE ID = {tbID}".format(
+		sql = 'UPDATE {tbName} SET {tbField} = "{tbValue}" WHERE ID = {tbID}'.format(
 			tbName=self.FGT_Table,
 			tbField=field,
 			tbValue=value,
 			tbID=ID
 		)
+		print sql
 		try:
 			self.cursor.execute(sql)
 			results = self.cursor.fetchall()
-			return results
+			if type(results) == tuple:
+				self.db.commit()
+				return True
 		except MySQLdb.Error as e:
 			print "Error: Unable to update field: %s" % (e)
 			self.db.close
+			return False
