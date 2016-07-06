@@ -15,7 +15,7 @@
   $FGTDevs = $db->get("fgt_devices", null, $cols);
   // echo "Last executed query was ". $db->getLastQuery() . "<br><br>";
   print "<pre>";
-  print_r($FGTDevs);
+  // print_r($FGTDevs);
   print "</pre><br><br>";
   if ($db->count > 0){
     for($i = 0; $i < sizeof($FGTDevs); $i++){
@@ -41,12 +41,38 @@
         }
         if (!is_null($fileName)){
           print "$fgtClient OK -> $fileName <br><br>";
-          print "git log --follow " .  $clientfolder . $fileName;
-          // $log = $repository->getLog('master', $fileName, 0, 10);
-          $log = $repository->getLog('master');
-          echo sprintf("<br>This log contains %s commits\n <br>", $log->countCommits());
-          print "<br><br><pre>";
-          print_r($log);
+          print "Blaming file " .  $fgtClient . "/" . $fileName;
+          $blame = $repository->getBlame('master', $fgtClient . "/" . $fileName);
+          print "<pre>";
+          // print_r($blame->getGroupedLines());
+          //
+          // foreach ($blame->getGroupedLines() as $lineNumber => $commits){
+          //     foreach($commits as $commitID => $commit){
+          //       print $commitID;
+          //       print "   -    ";
+          //       print $commit->getCommit()->getShortHash();
+          //       print "   -    ";
+          //       print $commit->getCommit()->getAuthorName();
+          //       // print_r($commit);
+          //       print "<br><br><br>";
+          //     }
+
+          $commits = Array();
+          foreach ($blame->getLines() as $lineNumber => $line){
+              $commit = $line->getCommit();
+              print "<pre>";
+              // print_r($commit->getCommitterDate() );
+              print "</pre>";
+              if (array_key_exists($commit->getShortHash(),$commits))
+                  continue;
+              $commits[$commit->getShortHash()] = array(
+                  "Author" => $commit->getAuthorName(),
+                  "Message" => $commit->getMessage(),
+              );
+              // echo "<br><br>" . $commit->getShortHash()  . "    - (".$commit->getAuthorName() . ") -- " . $commit->getMessage() . "<br><br>";
+              // break;
+          }
+          print_r($commits);
           print "</pre>";
         }
       }
