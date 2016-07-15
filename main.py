@@ -74,7 +74,7 @@ def main(configFile):
     	STATUS     = FGTDevice[1]
     	NAME	   = FGTDevice[2]
     	SERIAL     = FGTDevice[3]
-    	CLIENT     = FGTDevice[4]
+    	LOCAL      = FGTDevice[4]
     	IP         = FGTDevice[5]
     	IP2        = FGTDevice[6]
     	PORT	   = FGTDevice[7]
@@ -111,7 +111,7 @@ def main(configFile):
 
                 exit()
 
-                clientRepo = "%s/%s" % (defaultRepo, CLIENT)
+                clientRepo = "%s/%s" % (defaultRepo, LOCAL)
                 if not os.path.exists(clientRepo):
                     print "Path does not exist. Creating it...."
                     try:
@@ -123,7 +123,7 @@ def main(configFile):
                         print "Error on create repo directory: %s" % (e)
                         return 1
 
-                bkpFile = "%s/bkp_fgtconfig_%s.conf" % (CLIENT, FGTSerial)
+                bkpFile = "%s/bkp_fgtconfig_%s.conf" % (LOCAL, FGTSerial)
                 strBkpCMD = 'exec backup full-config ftp %s %s %s %s' % (bkpFile, FTPHost, FTPUser, FTPPass)
                 print strBkpCMD
                 outFGTBkpInfo = fgt.runFGTCommand(USER, PASSWORD, IPAddr, PORT, strBkpCMD)
