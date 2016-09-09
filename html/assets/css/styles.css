@@ -1,0 +1,13 @@
+.aPointer {
+  cursor: pointer;
+}
+.modal .modal-body {
+    max-height: 420px;
+    overflow-y: auto;
+}
+.chAddLine {
+  background-color: #ccffcc;
+}
+.chDelLine {
+  background-color: #ffcccc;
+}

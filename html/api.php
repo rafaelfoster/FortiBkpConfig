@@ -1,4 +1,5 @@
 <?php
+  require_once ('config.php');
 
   $method   = $_REQUEST['method'];
   $method();
@@ -11,18 +12,18 @@
   }
 
   function getAllDevices(){
-    $repofolder = "/var/repositories/fortibkpconfig";
+    global $config;
+    $repofolder = $config["repoFolder"];
     chdir ( $repofolder );
     $timezone = "America/Sao_Paulo";
     require_once("commits.php");
     $commit = new commit();
     $cols = Array ("NAME", "SERIAL", "LOCAL");
     $devices = $commit->dbGet($cols);
-    // foreach($devices as )
     $commits = Array();
     for ($i = 0; $i < sizeof($devices); $i++){
       $fileName = $devices[$i]["LOCAL"] . "/bkp_fgtconfig_" . $devices[$i]["SERIAL"] . ".conf";
-      // print $fileName . "<br>";
+
       if (!file_exists($fileName))
             continue;
       $lastBackupEntries = "";
@@ -30,7 +31,6 @@
       $commitList = "<table>";
       foreach ($blame->getLines() as $lineNumber => $line){
             $fgtCommit = $line->getCommit();
-            // if (array_key_exists($fgtCommit->getShortHash(),$commits) || ($fgtCommit->getShortHash() == "facbc76"))
             if (array_key_exists($fgtCommit->getShortHash(),$commits))
                 continue;
             $commitDate = $fgtCommit->getCommitterDate();
@@ -45,9 +45,7 @@
             );
             $commitList = $commitList . "<tr><td style='padding-right: 20px'><a class='getHashFile aPointer' data-serial='" .  $devices[$i]["SERIAL"] .  "'data-hash=" . $fgtCommit->getShortHash() . ">         <b>" . $fgtCommit->getShortHash() . "</b></a></td><td>" . $commitDate . "</td></tr>";
         }
-        // print "<pre>";
-        //   print_r($commits);
-        // print "</pre>";
+
         $commitList = $commitList . "</table>";
         usort($commits, "organizeArrayByDate");
         $arrayClients[] = array(

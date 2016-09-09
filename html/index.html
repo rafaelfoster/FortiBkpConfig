@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>FortiBkpConfig v1.0</title>
+
+    <link href="assets/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/1.10.12/css/jquery.dataTables.min.css" rel="stylesheet">
+    <link href="assets/css/styles.css" rel="stylesheet">
+  </head>
+
+	<body role="document">
+
+		<div class="container">
+			<img src="assets/imgs/logo_backup_fgt.png"alt="Logo Backup FGT">
+				<h3>Sistema de backup Fortigate </h3>
+				<ul class="nav nav-tabs nav-justified" >
+
+					<li class="nav active"><a href="#CONFIG1" data-toggle="tab">Last backups by Fortigate</a></li>
+					<li class="nav"><a href="#CONFIG2" data-toggle="tab">Fortigate Devices</a></li>
+				</ul>
+
+        <div class="tab-content">
+        <div class="tab-pane fade in active" id="CONFIG1">
+        <div class="row text-right">
+        <div class="col-sm-10"></div>
+        <div class="col-sm-2 text-right"><h5><span class="glyphicon glyphicon-ok" style="color:green" aria-hidden="true">4&nbsp</span><span class="glyphicon glyphicon-warning-sign" style="color:orange" aria-hidden="true">4&nbsp</span><span class="glyphicon glyphicon-remove" style="color:red" aria-hidden="true">4 </span></h5></div>
+        </div>
+					<table class="display" cellspacing="0" width="100%" id="tblLastFgtBackup">
+						<thead>
+              <tr>
+  							<th>Fortigate Name</th>
+  							<th> Serial </th>
+  							<th> Local</th>
+  							<th> Last backup</th>
+  							<th> Backup File </span></th>
+  							<th> Last backup Entries </span></th>
+						  </tr>
+						</thead>
+					</table>
+				</div>
+				<div class="tab-pane fade" id="CONFIG2">
+          <div class="row text-right">
+          <div class="col-sm-10"></div>
+          <div class="col-sm-2 text-right"><h5>
+            <button class=" btn btn-success glyphicon glyphicon-plus" alt="Add device" id="btnAddDevice"> </button>
+            <button class=" btn btn-danger glyphicon glyphicon-remove" alt="Remove device" id="btnDelDevice" disabled> </button>
+          </div>
+          <div>
+          <table class="display" cellspacing="0" width="100%" id="tbFortigateDevices">
+						<thead>
+              <tr>
+  							<th>Fortigate Name</th>
+  							<th> Serial </th>
+  							<th> Local</th>
+                <th> IP </span></th>
+                <th> IP2 </span></th>
+                <th> User </th>
+  							<th> Password </span></th>
+						  </tr>
+						</thead>
+					</table>
+				</div>
+				</div>
+			</div>
+		</div>
+		</div>
+
+    <!-- ///////////////////////////////////////////////////////////////////////////////////////////////// -->
+
+    <!-- Modal Hash File Content -->
+    <div class="modal fade" id="ModalHashFile" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-body" id="hashFileContent"> </div>
+          <div class="modal-footer">
+            <div id="FileChanges" >
+              <div class="col-md-3"></div>
+              <div class="col-md-3">
+                <span class="chAddLine"> Added lines </span>
+              </div>
+              <div class="col-md-3">
+                <span class="chDelLine"> Deleted lines</span>
+              </div>
+              <div class="col-md-3">
+                <button id="HashFile" type="button" class="btn btn-success">See entire file</button>
+              </div>
+            </div>
+            <div id="FileAndDownload" style="display: none;">
+              <button id="HashFileChanges" type="button" class="btn btn-warning">Last changes</button>
+              <a target="_blank" id="HashFileDownload" type="button" class="btn btn-primary">Download file</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <input type="hidden" id="fgtSerial">
+    <input type="hidden" id="fgtRevision">
+
+    <!-- Modal Add Fortigate Device -->
+    <div class="modal fade" id="ModalAddDevice" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-body" id="AddDeviceContent">
+            <div class="container">
+              <div class="row">
+                <div class="col-md-8">
+                  <label for="fgtName"> Fortigate Name </label>
+                  <input type="text" name="fgtName" />a
+                </div>
+                <div class="col-md-4">
+                  <label for="fgtLocal"> Local </label>
+                  <input type="text" name="fgtLocal" />
+                </div>
+              </div>
+              <div class="row">
+                  <div class="col-md-6">
+                    <label for="fgtIP"> IP Address </label>
+                    <input type="text" name="fgtIP" />
+                  </div>
+                  <div class="col-md-6">
+                    <label for="fgtIP2"> IP Address (Backup) </label>
+                    <input type="text" name="fgtIP2" />
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-md-6">
+                    <label for="fgtUser"> Username </label>
+                    <input type="text" name="fgtUser" />
+                  </div>
+                  <div class="col-md-6" id="passField">
+                    <label for="fgtPassword"> Password </label>
+                    <input type="password" name="fgtPassword" placeholder="Password" />
+                  </div>
+                </div>
+                <div class="row">
+
+                  <div class="col-md-6" id="keyField">
+                    <label for="fgtPassword"> SSH Key </label>
+                    <textarea> ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDJOIgB9OhVpgm1AnJm8IRyAcuIw5upq6dNHE5t+AbTAjJeT2kPV2+wStx0osLjuc6oYUQSxAyec/c5sZbYch43NeM24VlPtA+qGhSv+BAtWlpLKbBnJKD3ZwwoKfH4fze7BjFoGb0mlUI9H++9E6CP9v5MECIUiS7azNkdXzb5oU7naoCXeFZsjIer52e4lW/OnYspPB7yZflYWSLvGw4J3RaLGcJqs8Elx1Xs4fOD9e+52xIWROqQQQ+0jX/WqbC4Iqc2q8Fs6HzpF8EXMtS7pyL8nIgRCVBgcGT2dB62QGDqCMJ6xHvzbuStS66QgbYo2I63Kqwq2Rsy98pQku9ukvTOOMElJnZXrsxDhywg3im+gSrDf1PPbssQAliYZi1V/3r2pdDcmcYUesS7iRpFCUzXD0daCDmZL2/xKtD4GBd03l1p0eioEaC8nmgAxrUT+MWLrt7T8mjoUA5L2awwz198POaQ5TS3usjBXBIMUOjSsmxT9R/OQ4a1CNbLpMEndnmApid44VQXa/u1BKnlsgjT4hLs+hko7Yzr31oOxbb3fG0siFDkdPlh3Nx1mjre1ZZGoZc0xYNZUACdCLORECo1mX7+I0SB8zIAO9qAIecr+YenBfO5AG8SRN/LD+RbTjOo8RVmTGUuyQa2SvmwD4j4G7d8csFOKM19oFUWvw== rafael@FOSTER-EOS </textarea>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button id="HashFileChanges" type="button" class="btn btn-default" >Cancel</button>
+            <a target="_blank" id="HashFileDownload" type="button" class="btn btn-success">Save</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script src="assets/js/bootstrap.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js"></script>
+    <script src="assets/js/main.js"></script>
+
+    </script>
+  </body>
+</html>

@@ -1,6 +1,7 @@
 <?php
 //   $timezone = 'America/Sao_Paulo';
 //
+  require_once ('config.php');
   require_once ('inc/MysqliDb.php');
   require_once ("inc/gitlib/vendor/autoload.php");
   use Gitonomy\Git\Repository;
@@ -8,10 +9,19 @@
 Class commit{
   public $db = "";
   public $repo = "";
+  public $cnf = array();
+  public $cnfDB = array();
+
+  public function __construct() {
+    global $config;
+    global $configDB;
+    $this->cnf = $config;
+    $this->cnfDB = $configDB;
+  }
 
   public function gitRepo(){
     if (!is_object($this->repo)){
-      $repofolder = "/var/repositories/fortibkpconfig";
+      $repofolder = $this->cnf["repoFolder"];
       $this->repo = new Repository($repofolder);
       chdir ( $repofolder );
     }
@@ -20,7 +30,7 @@ Class commit{
 
   public function database(){
      if (!is_object($this->db))
-        $this->db = new MysqliDb ('localhost', 'fgtbkp', '1trMgqrFuUXBAHU5R5VUphjRw5MS', 'you_admin');
+        $this->db = new MysqliDb ($this->cnfDB["db_host"], $this->cnfDB["user"],$this->cnfDB["pass"], $this->cnfDB["database"] );
      return $this->db;
   }
 
