@@ -23,6 +23,7 @@ Class commit{
         $this->db = new MysqliDb ('localhost', 'fgtbkp', '1trMgqrFuUXBAHU5R5VUphjRw5MS', 'you_admin');
      return $this->db;
   }
+
   public function dbGet($fields,$serial = null){
       $conn = $this->database();
       if (!is_array($fields)){
@@ -37,13 +38,14 @@ Class commit{
       $dbquery = $conn->get("fgt_devices", null, $cols);
       return $dbquery;
   }
+
   public function organizeArrayByDate($a, $b){
       $t1 = strtotime($a['Data']);
       $t2 = strtotime($b['Data']);
       return $t2 - $t1;
   }
 
-  function getFileName($serial){
+  private function getFileName($serial){
       $cols = Array ("SERIAL", "LOCAL");
       if (!is_null($serial)){
         $FGTDevs = $this->dbGet( Array("SERIAL", "LOCAL"),$serial);
@@ -60,6 +62,37 @@ Class commit{
       return $filerevision;
   }
 
+  public function getLastChanges($serial){
+    $fileName = $this->getFileName($serial);
+    $repo = $this->gitRepo();
+    $diff = $repo->run("log", array("-p", "--follow", "-1", $fileName));
+    $lastDiff = $this->str_chop_lines($diff, 11);
+    $count = 1;
+    print "<table border='0' style='border: 1px dashed gray;'>";
+    foreach(preg_split("/((\r?\n)|(\r\n?))/", $lastDiff) as $line){
+          if( preg_match("/^\-(.*)/",  $line) ){
+            $class = "chDelLine";
+          } elseif ( preg_match("/^\+(.*)/",  $line) ){
+            $class = "chAddLine";
+          }
+          $line = preg_replace("/\-(.*)/", "$1", $line);
+          $line = preg_replace("/\+(.*)/", "$1", $line);
+          print '<tr class="$class" style="border: 1px dashed gray;">';
+            print "<td width='50px' style='border: 1px dashed gray;'> $count </td>";
+            print "<td width='200px' style='border: 1px dashed gray;'> $line </td>";
+        print "</tr>";
+        $count++;
+    }
+    print "</table>";
+    // $lastDiff = preg_replace("/\-(.*)/", '<span class="remove"> $1 </span><br>', $lastDiff);
+    // $lastDiff = preg_replace("/\+(.*)/", '<span class="add"> $1 </span><br>', $lastDiff);
+    // print $lastDiff;
+
+  }
+
+  private function str_chop_lines($str, $lines = 4) {
+    return implode("\n", array_slice(explode("\n", $str), $lines));
+  }
 
 
 }

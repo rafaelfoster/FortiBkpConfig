@@ -3,6 +3,13 @@
   $method   = $_REQUEST['method'];
   $method();
 
+  function getChanges(){
+    $serial   = $_REQUEST['serial'];
+    require_once("commits.php");
+    $commit = new commit();
+    $commit->getLastChanges($serial);
+  }
+
   function getAllDevices(){
     $repofolder = "/var/repositories/fortibkpconfig";
     chdir ( $repofolder );
@@ -23,12 +30,13 @@
       $commitList = "<table>";
       foreach ($blame->getLines() as $lineNumber => $line){
             $fgtCommit = $line->getCommit();
-            if (array_key_exists($fgtCommit->getShortHash(),$commits) || ($fgtCommit->getShortHash() == "facbc76"))
+            // if (array_key_exists($fgtCommit->getShortHash(),$commits) || ($fgtCommit->getShortHash() == "facbc76"))
+            if (array_key_exists($fgtCommit->getShortHash(),$commits))
                 continue;
             $commitDate = $fgtCommit->getCommitterDate();
             date_timezone_set($commitDate, timezone_open($timezone));
             $commitDate = date_format($commitDate, 'Y-m-d H:i:s');
-            $message = str_replace (array("\r\n", "\n", "\r"), ' ', $fgtCommit->getMessage() );
+            $message = str_replace(array("\r\n", "\n", "\r"), ' ', $fgtCommit->getMessage() );
             $commits[$fgtCommit->getShortHash()] = array(
                 "Hash"    => $fgtCommit->getShortHash(),
                 "Author"  => $fgtCommit->getAuthorName(),
@@ -37,6 +45,9 @@
             );
             $commitList = $commitList . "<tr><td style='padding-right: 20px'><a class='getHashFile aPointer' data-serial='" .  $devices[$i]["SERIAL"] .  "'data-hash=" . $fgtCommit->getShortHash() . ">         <b>" . $fgtCommit->getShortHash() . "</b></a></td><td>" . $commitDate . "</td></tr>";
         }
+        // print "<pre>";
+        //   print_r($commits);
+        // print "</pre>";
         $commitList = $commitList . "</table>";
         usort($commits, "organizeArrayByDate");
         $arrayClients[] = array(
@@ -55,6 +66,7 @@
     print json_encode($data);
     exit();
   }
+
 
   function organizeArrayByDate($a, $b){
       $t1 = strtotime($a['Data']);
